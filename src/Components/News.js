@@ -18,41 +18,55 @@ export class News extends Component {
 
     async componentDidMount() {
         let apiEndPoint = `https://newsapi.org/v2/top-headlines?country=us&apiKey=aced9346475f4dc69ebc1a0585ccbd1a&pageSize=${this.state.pageSize}&page=${this.state.page}`;
+        this.setState({loading: true});
         let data = await fetch(apiEndPoint);
         let parseData = await data.json();
         this.setState({
             totalResults: parseData.totalResults,
             articles: parseData.articles,
             totalPages: Math.ceil(this.state.totalResults / this.state.pageSize),
+            loading: false
         })
+    }
+
+    scrollUP = () => {
+        console.log("scrolling")
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
     }
 
     handlePrevClick = async() => {
         if (this.state.page === 1){
             return null
         }
+        this.scrollUP();
         let apiEndPoint = `https://newsapi.org/v2/top-headlines?country=us&apiKey=aced9346475f4dc69ebc1a0585ccbd1a&pageSize=${this.state.pageSize}&page=${this.state.page - 1}`;
+        this.setState({loading: true});
         let data = await fetch(apiEndPoint);
         let parseData = await data.json();
-        console.log("getting")
         this.setState({
             articles: parseData.articles,
-            page : this.state.page - 1
+            page : this.state.page - 1,
+            loading: false
         })
+        
     }
 
     handleNextClick = async() => {
         if (this.state.page === this.state.totalPages) {
             return null
         }
-        console.log(this.state)
-        let apiEndPoint = `https://newsapi.org/v2/top-headlines?country=us&apiKey=aced9346475f4dc69ebc1a0585ccbd1a&pageSize=${this.state.pageSize}&page=${this.state.page + 1}`;
+        this.scrollUP();
+        let apiEndPoint= `https://newsapi.org/v2/top-headlines?country=us&apiKey=aced9346475f4dc69ebc1a0585ccbd1a&pageSize=${this.state.pageSize}&page=${this.state.page + 1}`;
+        this.setState({loading: true});
         let data = await fetch(apiEndPoint);
         let parseData = await data.json();
         this.setState({
             articles: parseData.articles,
-            page : this.state.page + 1
+            page : this.state.page + 1, 
+            loading: false
         })
+        
     }
 
     static propTypes = {
@@ -61,9 +75,10 @@ export class News extends Component {
 
     render() {
         return (
-            <div className="container">
+            <div className="container d-flex flex-column justify-content-center">
                 <h3>News Heading</h3>
-                <div className="row gy-3 mt-0">
+                {this.state.loading && <img style={{height: "50vh", margin: "auto"}} src="/spinner.gif" alt="" />}
+                {!this.state.loading && <div className="row gy-3 mt-0">
                     {this.state.articles.map((newsElem) => {
                         console.log(this.state.totalPages)
                         return (
@@ -74,9 +89,9 @@ export class News extends Component {
                         )
                     })}
 
-                </div>
-                <div className='d-flex justify-content-between'>
-                    {this.state.totalResults > this.state.pageSize && <>
+                </div>}
+                <div className='d-flex justify-content-between my-3'>
+                    {this.state.totalResults > this.state.pageSize && !this.state.loading && <>
                     <button type="button" class="btn btn-dark" disabled={this.state.page === 1} onClick={this.handlePrevClick} >Previous</button>
                     <button type="button" class="btn btn-dark" disabled={this.state.page === this.state.totalPages} onClick={this.handleNextClick}>Next</button></>}
                 </div>
